@@ -1,8 +1,21 @@
-import React from 'react';
-import { Timer } from './components/Timer/Timer';
+import React, { useState } from 'react';
+import Countdown from './components/Countdown/Countdown'; // Импортируем Countdown
+import Timer from './components/Timer/Timer';
+import SwitchButton from './components/SwitchButton/SwitchButton';
 
 function App() {
-    return <Timer />;
+    const [isTimer, setIsTimer] = useState(true);
+
+    const toggleView = () => {
+        setIsTimer(prev => !prev);
+    };
+
+    return (
+        <>
+            {isTimer ? <Timer /> : <Countdown />}
+            <SwitchButton toggleView={toggleView} />
+        </>
+    );
 }
 
 export default App;
