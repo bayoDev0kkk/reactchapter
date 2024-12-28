@@ -1,78 +1,75 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
+import { Button } from '@mui/material';
 
-// Стили для компонентов
 const TimerContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
+  justify-content: center;
+  gap: 16px;
 `;
 
-const TimerDisplay = styled.div`
-  font-size: 48px;
-  margin-bottom: 20px;
+const TimeDisplay = styled.div`
+  font-size: 2rem;
+  font-family: 'Roboto', sans-serif;
 `;
 
-const ControlButton = styled.button`
-  padding: 10px 20px;
-  font-size: 16px;
-  margin: 5px;
-  cursor: pointer;
-`;
+const Timer = React.memo(() => {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef<number | null>(null);
 
-// Timer component
-const Timer: React.FC = () => {
-  const [time, setTime] = useState(0); // состояние времени в секундах
-  const [isRunning, setIsRunning] = useState(false); // состояние, чтобы узнать, работает ли таймер
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null); // ID интервала
+  const formatTime = useCallback((time: number) => {
+    const minutes = Math.floor(time / 60000);
+    const seconds = Math.floor((time % 60000) / 1000);
+    const milliseconds = time % 1000;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}:${milliseconds
+      .toString()
+      .padStart(3, '0')}`;
+  }, []);
 
-  // Мемоизированный обработчик для старта/паузы
-  const toggleTimer = useCallback(() => {
+  useEffect(() => {
     if (isRunning) {
-      clearInterval(intervalId!);
-      setIntervalId(null);
+      intervalRef.current = window.setInterval(() => {
+        setTime((prev) => prev + 10);
+      }, 10);
     } else {
-      const id = setInterval(() => setTime((prev) => prev + 1), 1000);
-      setIntervalId(id);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isRunning]);
+
+  const handleStartPause = () => {
     setIsRunning((prev) => !prev);
-  }, [isRunning, intervalId]);
-
-  // Мемоизированный обработчик для сброса
-  const resetTimer = useCallback(() => {
-    clearInterval(intervalId!);
-    setTime(0);
-    setIsRunning(false);
-    setIntervalId(null);
-  }, [intervalId]);
-
-  // Форматирование времени (минуты, секунды)
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
-  // Очистка интервала при размонтировании компонента
-  useEffect(() => {
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [intervalId]);
+  const handleReset = () => {
+    setIsRunning(false);
+    setTime(0);
+  };
 
   return (
     <TimerContainer>
-      <h1>Таймер</h1>
-      <TimerDisplay>{formatTime(time)}</TimerDisplay>
-      <ControlButton onClick={toggleTimer}>
-        {isRunning ? 'Пауза' : 'Запуск'}
-      </ControlButton>
-      <ControlButton onClick={resetTimer}>Сбросить</ControlButton>
+      <h1>Timer</h1>
+      <TimeDisplay>{formatTime(time)}</TimeDisplay>
+      <div>
+        <Button variant="contained" color="primary" onClick={handleStartPause}>
+          {isRunning ? 'Pause' : 'Start'}
+        </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={handleReset}
+          style={{ marginLeft: '8px' }}
+        >
+          Reset
+        </Button>
+      </div>
     </TimerContainer>
   );
-};
+});
 
 export default Timer;
