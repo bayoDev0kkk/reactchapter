@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ButtonControl } from './ButtonControl';
 import { TimeInput } from './TimeInput';
 import { ProgressBar } from './ProgressBar';
 import { styled } from '@mui/system';
 
-// Заменили на новый звук
 const beepSoundURL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
 const CountdownWrapper = styled('div')`
@@ -44,30 +43,35 @@ const Countdown: React.FC = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-    // Звуковое оповещение
-    const beep = new Audio(beepSoundURL);
+  
+   
+    const beep = useRef(new Audio(beepSoundURL));
 
-    // useEffect для отслеживания времени и проигрывания звука
+   
     useEffect(() => {
         if (timeLeft <= 0 && intervalId) {
-            beep.play(); // Воспроизводим звук
-            clearInterval(intervalId); // Останавливаем таймер
+            beep.current.play(); 
+            clearInterval(intervalId); 
         }
     }, [timeLeft, intervalId]);
 
-    // useEffect для установки начальных значений таймера
+    
     useEffect(() => {
         setSliderValue(minutes * 60 + seconds);
         setTimeLeft(minutes * 60 + seconds);
     }, [minutes, seconds]);
 
-    const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setMinutes(Math.min(Math.max(Number(e.target.value), 0), 720));
-    };
+    const clamp = (value: number, min: number, max: number) => {
+        return Math.min(Math.max(value, min), max);
+      };
 
-    const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSeconds(Math.min(Math.max(Number(e.target.value), 0), 59));
-    };
+      const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setMinutes(clamp(Number(e.target.value), 0, 720));
+      };
+      
+      const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSeconds(clamp(Number(e.target.value), 0, 59));
+      };
 
     const handleSliderChange = (e: Event, newValue: number | number[]) => {
         const newSliderValue = Array.isArray(newValue) ? newValue[0] : newValue;
@@ -102,12 +106,12 @@ const Countdown: React.FC = () => {
         if (intervalId) clearInterval(intervalId);
         setTimeLeft(minutes * 60 + seconds);
 
-        // Останавливаем музыку и сбрасываем её
-        beep.pause();
-        beep.currentTime = 0;
+        beep.current.pause();
+        beep.current.currentTime = 0;
     };
 
     const progress = (timeLeft / (minutes * 60 + seconds)) * 100;
+    const timeForDisplay = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`
 
     return (
         <CountdownWrapper>
@@ -121,7 +125,7 @@ const Countdown: React.FC = () => {
                 sliderValue={sliderValue}
             />
             <TimeDisplay>
-                {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+                {timeForDisplay}
             </TimeDisplay>
             <ProgressBar progress={progress} />
             <ButtonControl

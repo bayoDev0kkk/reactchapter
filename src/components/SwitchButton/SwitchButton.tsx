@@ -1,8 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Button } from '@mui/material';
 
 const ButtonWrapper = styled.div`
-    margin-top: 20px;
+    margin-top: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 `;
 
 interface SwitchButtonProps {
@@ -12,7 +16,9 @@ interface SwitchButtonProps {
 const SwitchButton: React.FC<SwitchButtonProps> = ({ toggleView }) => {
     return (
         <ButtonWrapper>
-            <button onClick={toggleView}>Switch to Timer/Countdown</button>
+            <Button variant='contained' color='success' onClick={toggleView}>
+                Switch to Timer/Countdown
+            </Button>
         </ButtonWrapper>
     );
 };

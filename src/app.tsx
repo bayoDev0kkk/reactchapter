@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Countdown from './components/Countdown/Countdown'; // Импортируем Countdown
+import Countdown from './components/Countdown/Countdown'; 
 import Timer from './components/Timer/Timer';
 import SwitchButton from './components/SwitchButton/SwitchButton';
 
